@@ -1,0 +1,320 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module:Arduino_UNO_R3 A1
+U 1 1 6032B0AD
+P 4600 3900
+F 0 "A1" H 4600 5081 50  0000 C CNN
+F 1 "Arduino_UNO_R3" H 4600 4990 50  0000 C CNN
+F 2 "Module:Arduino_UNO_R3" H 4600 3900 50  0001 C CIN
+F 3 "https://www.arduino.cc/en/Main/arduinoBoardUno" H 4600 3900 50  0001 C CNN
+	1    4600 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 6032DC92
+P 3950 4100
+F 0 "D?" H 3943 4225 50  0000 C CNN
+F 1 "LED" H 3943 4225 50  0001 C CNN
+F 2 "" H 3950 4100 50  0001 C CNN
+F 3 "~" H 3950 4100 50  0001 C CNN
+	1    3950 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60333574
+P 3500 4100
+F 0 "#PWR?" H 3500 3850 50  0001 C CNN
+F 1 "GND" H 3505 3927 50  0000 C CNN
+F 2 "" H 3500 4100 50  0001 C CNN
+F 3 "" H 3500 4100 50  0001 C CNN
+	1    3500 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 60330CD7
+P 3650 4100
+F 0 "R?" V 3445 4100 50  0000 C CNN
+F 1 "220" V 3536 4100 50  0000 C CNN
+F 2 "" V 3690 4090 50  0001 C CNN
+F 3 "~" H 3650 4100 50  0001 C CNN
+	1    3650 4100
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 6033863C
+P 4700 5000
+F 0 "#PWR?" H 4700 4750 50  0001 C CNN
+F 1 "GND" H 4705 4827 50  0000 C CNN
+F 2 "" H 4700 5000 50  0001 C CNN
+F 3 "" H 4700 5000 50  0001 C CNN
+	1    4700 5000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Extra~Compenents:Rotary_Encoder_Switch SW1
+U 1 1 60348940
+P 2650 2800
+F 0 "SW1" V 3065 2717 50  0000 C CNN
+F 1 "Rotary_Encoder" V 2974 2717 50  0000 C CNN
+F 2 "" H 2650 3300 50  0001 C CNN
+F 3 "" H 2650 3300 50  0001 C CNN
+	1    2650 2800
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5100 4200 5150 4200
+$Comp
+L power:GND #PWR?
+U 1 1 6034DD6B
+P 3100 3000
+F 0 "#PWR?" H 3100 2750 50  0001 C CNN
+F 1 "GND" H 3105 2827 50  0000 C CNN
+F 2 "" H 3100 3000 50  0001 C CNN
+F 3 "" H 3100 3000 50  0001 C CNN
+	1    3100 3000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4800 2900 4950 2900
+$Comp
+L Display_Character:RC1602A U?
+U 1 1 6034F84E
+P 2550 4050
+F 0 "U?" H 2550 4931 50  0000 C CNN
+F 1 "RC1602A" H 2550 4840 50  0000 C CNN
+F 2 "Display:RC1602A" H 2650 3250 50  0001 C CNN
+F 3 "http://www.raystar-optronics.com/down.php?ProID=18" H 2650 3950 50  0001 C CNN
+	1    2550 4050
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 2650 4950 2900
+Wire Wire Line
+	4050 3500 4100 3500
+Wire Wire Line
+	4000 3600 4100 3600
+Wire Wire Line
+	4050 3500 4050 2600
+Wire Wire Line
+	3100 2600 4050 2600
+Wire Wire Line
+	5150 4200 5150 2550
+Wire Wire Line
+	5150 2550 3150 2550
+Wire Wire Line
+	3150 2550 3150 2700
+Wire Wire Line
+	3150 2700 3100 2700
+Wire Wire Line
+	4000 3600 4000 2800
+Wire Wire Line
+	4000 2800 3100 2800
+Wire Wire Line
+	4950 2650 3200 2650
+Wire Wire Line
+	3200 2650 3200 2900
+Wire Wire Line
+	3200 2900 3100 2900
+Wire Wire Line
+	2950 4250 3350 4250
+Wire Wire Line
+	3350 4250 3350 3850
+Wire Wire Line
+	4050 4000 4100 4000
+Wire Wire Line
+	2950 4350 3300 4350
+Wire Wire Line
+	3300 4350 3300 3800
+Wire Wire Line
+	3300 3800 4000 3800
+Wire Wire Line
+	2950 4450 3250 4450
+Wire Wire Line
+	3250 4450 3250 3750
+Wire Wire Line
+	3250 3750 4050 3750
+Wire Wire Line
+	4050 3750 4050 3800
+Wire Wire Line
+	4050 3800 4100 3800
+Wire Wire Line
+	4050 4000 4050 3850
+Wire Wire Line
+	4050 3850 3350 3850
+Wire Wire Line
+	4000 3800 4000 3900
+Wire Wire Line
+	4000 3900 4100 3900
+Wire Wire Line
+	2950 4550 3200 4550
+Wire Wire Line
+	3200 4550 3200 3700
+Wire Wire Line
+	3200 3700 4100 3700
+$Comp
+L power:GND #PWR?
+U 1 1 6036687F
+P 2150 4250
+F 0 "#PWR?" H 2150 4000 50  0001 C CNN
+F 1 "GND" V 2155 4122 50  0000 R CNN
+F 2 "" H 2150 4250 50  0001 C CNN
+F 3 "" H 2150 4250 50  0001 C CNN
+	1    2150 4250
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4100 4200 3900 4200
+Wire Wire Line
+	3900 4200 3900 4800
+$Comp
+L Device:R_US R?
+U 1 1 6036AAB5
+P 1950 4600
+F 0 "R?" H 2018 4646 50  0000 L CNN
+F 1 "220" H 2018 4555 50  0000 L CNN
+F 2 "" V 1990 4590 50  0001 C CNN
+F 3 "~" H 1950 4600 50  0001 C CNN
+	1    1950 4600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3900 4800 1950 4800
+Wire Wire Line
+	1950 4800 1950 4750
+Wire Wire Line
+	1950 4450 1950 4350
+Wire Wire Line
+	1950 4350 2150 4350
+Wire Wire Line
+	2950 3750 3150 3750
+Wire Wire Line
+	3150 3750 3150 4600
+Wire Wire Line
+	3150 4600 4050 4600
+Wire Wire Line
+	4050 4600 4050 4300
+Wire Wire Line
+	4050 4300 4100 4300
+$Comp
+L power:GND #PWR?
+U 1 1 6036D97E
+P 3050 3650
+F 0 "#PWR?" H 3050 3400 50  0001 C CNN
+F 1 "GND" V 3055 3522 50  0000 R CNN
+F 2 "" H 3050 3650 50  0001 C CNN
+F 3 "" H 3050 3650 50  0001 C CNN
+	1    3050 3650
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2950 3650 3050 3650
+Wire Wire Line
+	2950 3550 3000 3550
+Wire Wire Line
+	3000 3550 3000 5250
+Wire Wire Line
+	3000 5250 5150 5250
+Wire Wire Line
+	5150 5250 5150 4300
+Wire Wire Line
+	5150 4300 5100 4300
+Wire Wire Line
+	3200 2900 3250 2900
+Wire Wire Line
+	3250 2900 3250 3350
+Wire Wire Line
+	3250 3350 2550 3350
+Connection ~ 3200 2900
+$Comp
+L power:GND #PWR?
+U 1 1 603739C3
+P 2550 4850
+F 0 "#PWR?" H 2550 4600 50  0001 C CNN
+F 1 "GND" H 2555 4677 50  0000 C CNN
+F 2 "" H 2550 4850 50  0001 C CNN
+F 3 "" H 2550 4850 50  0001 C CNN
+	1    2550 4850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2550 4850 2550 4750
+$Comp
+L Device:CP1 C?
+U 1 1 603757B4
+P 2050 3700
+F 0 "C?" H 1936 3654 50  0000 R CNN
+F 1 "100uF" H 1936 3745 50  0000 R CNN
+F 2 "" H 2050 3700 50  0001 C CNN
+F 3 "~" H 2050 3700 50  0001 C CNN
+	1    2050 3700
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	2150 3850 2050 3850
+$Comp
+L Device:R_US R?
+U 1 1 60379E02
+P 1600 3700
+F 0 "R?" H 1533 3654 50  0000 R CNN
+F 1 "100k" H 1533 3745 50  0000 R CNN
+F 2 "" V 1640 3690 50  0001 C CNN
+F 3 "~" H 1600 3700 50  0001 C CNN
+	1    1600 3700
+	1    0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 6037F334
+P 1600 3550
+F 0 "#PWR?" H 1600 3300 50  0001 C CNN
+F 1 "GND" H 1605 3377 50  0000 C CNN
+F 2 "" H 1600 3550 50  0001 C CNN
+F 3 "" H 1600 3550 50  0001 C CNN
+	1    1600 3550
+	1    0    0    1   
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 60382504
+P 1600 4000
+F 0 "R?" H 1668 4046 50  0000 L CNN
+F 1 "2k" H 1668 3955 50  0000 L CNN
+F 2 "" V 1640 3990 50  0001 C CNN
+F 3 "~" H 1600 4000 50  0001 C CNN
+	1    1600 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4100 4400 4000 4400
+Wire Wire Line
+	4000 4400 4000 5100
+Wire Wire Line
+	2050 3550 1600 3550
+Connection ~ 1600 3550
+Wire Wire Line
+	4000 5100 1600 5100
+Wire Wire Line
+	1600 5100 1600 4150
+Wire Wire Line
+	2050 3850 1600 3850
+Connection ~ 2050 3850
+Connection ~ 1600 3850
+$EndSCHEMATC
