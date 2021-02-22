@@ -6,6 +6,7 @@
 // Add rolling average for inductance calculations.
 // Move all strings into map.
 // Add two sensitivity options for sliders.
+// Find a way to measure the voltage across the inductor only (hint: try subtracting the two voltage pin values.)
 
 // Config.
 long numberOfSamples = 10000;

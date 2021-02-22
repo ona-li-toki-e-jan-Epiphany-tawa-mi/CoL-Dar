@@ -6,10 +6,10 @@ encoding utf-8
 Sheet 1 1
 Title "CoL-Dar"
 Date "2021-02-21"
-Rev "1"
+Rev "1.1"
 Comp "ona li toki e jan Epiphany tawa mi"
-Comment1 ""
-Comment2 ""
+Comment1 "N1: L1 is the inductor to be tested."
+Comment2 "N2: R7 is a shunt that the user can change out."
 Comment3 ""
 Comment4 ""
 $EndDescr
@@ -386,37 +386,32 @@ $EndComp
 $Comp
 L Device:L L1
 U 1 1 60355E52
-P 8150 4750
-F 0 "L1" V 7969 4750 50  0000 C CNN
-F 1 "L - Variable" V 8060 4750 50  0000 C CNN
-F 2 "" H 8150 4750 50  0001 C CNN
-F 3 "~" H 8150 4750 50  0001 C CNN
-	1    8150 4750
+P 8150 4850
+F 0 "L1" V 7969 4850 50  0000 C CNN
+F 1 "L - Variable" V 8060 4850 50  0000 C CNN
+F 2 "" H 8150 4850 50  0001 C CNN
+F 3 "~" H 8150 4850 50  0001 C CNN
+	1    8150 4850
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	7850 4250 7850 4750
-Wire Wire Line
-	7850 4750 8000 4750
+	7850 4850 8000 4850
 Connection ~ 7850 4250
 Wire Wire Line
-	8300 4750 8450 4750
-Wire Wire Line
-	8450 4750 8450 4250
+	8300 4850 8450 4850
 Wire Notes Line width 20 style dash_dot
-	7750 4500 8550 4500
+	7750 4600 8550 4600
 $Comp
 L Device:R_US R7
 U 1 1 60364A06
-P 8450 4100
-F 0 "R7" H 8518 4146 50  0000 L CNN
-F 1 "R - Variable" H 8518 4055 50  0000 L CNN
-F 2 "" V 8490 4090 50  0001 C CNN
-F 3 "~" H 8450 4100 50  0001 C CNN
-	1    8450 4100
+P 8750 4100
+F 0 "R7" H 8818 4146 50  0000 L CNN
+F 1 "R - Variable" H 8818 4055 50  0000 L CNN
+F 2 "" V 8790 4090 50  0001 C CNN
+F 3 "~" H 8750 4100 50  0001 C CNN
+	1    8750 4100
 	1    0    0    -1  
 $EndComp
-Connection ~ 8450 4250
 $Comp
 L power:GND #PWR0109
 U 1 1 603652FF
@@ -450,4 +445,33 @@ Wire Wire Line
 Wire Wire Line
 	5850 2300 7050 2300
 Connection ~ 7050 2300
+Wire Wire Line
+	8450 4250 8750 4250
+Connection ~ 8450 4250
+Wire Wire Line
+	8450 3950 8750 3950
+Wire Notes Line width 20
+	8600 4350 8600 3850
+Wire Wire Line
+	7850 4250 7850 4450
+Wire Wire Line
+	8450 4400 6850 4400
+Wire Wire Line
+	6850 4400 6850 4200
+Wire Wire Line
+	6850 4200 6700 4200
+Wire Wire Line
+	8450 4400 8450 4250
+Wire Wire Line
+	6700 4300 6800 4300
+Wire Wire Line
+	6800 4300 6800 4450
+Wire Wire Line
+	6800 4450 7850 4450
+Wire Wire Line
+	7850 4450 7850 4850
+Connection ~ 7850 4450
+Wire Wire Line
+	8450 4850 8450 4400
+Connection ~ 8450 4400
 $EndSCHEMATC
