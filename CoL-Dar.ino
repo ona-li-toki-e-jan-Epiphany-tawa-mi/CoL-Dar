@@ -1,12 +1,11 @@
 #include <LiquidCrystal.h>
 
 // TODO Ensure type conversions are accurate.
-// Language options?))
-// Have adjustable states be saved after setting them. 
-// Add rolling average for inductance calculations.
-// Move all strings into map.
-// Add two sensitivity options for sliders.
-// Find a way to measure the voltage across the inductor only (hint: try subtracting the two voltage pin values.)
+// TODO Add docstrings to functions and classes.
+// TODO Language options?))
+// TODO Have adjustable states be saved after setting them. 
+// TODO Add rolling average for inductance calculations.
+// TODO Add two sensitivity options for sliders.
 
 // Config.
 long numberOfSamples = 10000;
@@ -22,7 +21,6 @@ int LCDContrast = 0;
 #define LCD_D5_PIN 6
 #define LCD_D6_PIN 5
 #define LCD_D7_PIN 4
-#define INDICATOR_LED_PIN 8
 // Measures the voltage drop of the inductor in reference to ground.
 #define INDUCTOR_VOLTAGE_PIN A1
 // Measures the voltage drop of the shunt in reference to ground.
@@ -264,6 +262,7 @@ class MenuController {
 void testInductor();
 void setInterruptState(bool state);
 
+// The menu tree.
 MenuController* menu = new MenuController(new Menu(e_none, new Menu*[3] {
   new Menu(e_testInductor, testInductor), 
   new Menu(e_testerSettings, new Menu*[3] {
@@ -290,8 +289,7 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(INDUCTOR_CHARGE_PIN, OUTPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-  pinMode(INDICATOR_LED_PIN, OUTPUT);
-
+  
   for (byte i = 0; i < 6; i++)
     LCD.createChar(i, loadingBar[i]);
   LCD.begin(16, 2);
@@ -302,6 +300,11 @@ void setup() {
   cursorTiming = millis();
 }
 
+/**
+ * Toggles all persistent functions that rely on the clocks, like interrupts and PWM pin.
+ * 
+ * @param state Whether the functions should be activated or deactivated.
+ */
 void setInterruptState(bool state) {
   if (state) {
     analogWrite(LCD_BACKLIGHT_PIN, LCDBrightness);
@@ -321,7 +324,7 @@ void setInterruptState(bool state) {
 
 bool showCursor = false;
 
-void loop() {
+void loop() {  
   if (encoderSteps > 5) {
     encoderSteps = 0;
     menu->onScroll(1);
@@ -336,15 +339,18 @@ void loop() {
     menu->onButtonPress();
   }
 
-  unsigned long currentTime = millis();
-  if (abs(currentTime - cursorTiming) > 750) {
+  unsigned long deltaCursorTime = millis() - cursorTiming;
+  if (abs(deltaCursorTime) > 750) {
     showCursor = !showCursor;
     if (showCursor) { LCD.cursor(); } else LCD.noCursor();
     
-    cursorTiming = currentTime;
+    cursorTiming = millis();
   }
 }
 
+/**
+ * Runs tests to find the inductance and ESR of the attached inductor and displays the result.
+ */
 void testInductor() {
   // Disables non-essential interrupts to increase time-accuracy. 
   setInterruptState(false);
@@ -353,8 +359,6 @@ void testInductor() {
   double summedInductance = 0;
 
   for (long int i = 0; i < numberOfSamples; i++) {
-    digitalWrite(INDICATOR_LED_PIN, HIGH);
-      
     // Measures how long the inductor takes to charge.
     int lastVoltage = -1;
     int currentVoltage;
@@ -380,24 +384,22 @@ void testInductor() {
 
     // Overflow protection.
     unsigned long deltaTime = endTime > startTime ? endTime - startTime : (unsigned long) -1 - startTime + endTime;
-    // Caculates the circuit resistance from shunt. R = V / (Vs / Rs)
-    double circuitResistance = 5.0 / (shuntVoltage * (5.0 / 1024.0) / shuntResistance);
+    // Caculates the circuit resistance from shunt. R = Vcc / (Vs / Rs)
+    double circuitResistance = 5 / (shuntVoltage * (5 / 1024.0) / shuntResistance);
     
     summedESR += circuitResistance - shuntResistance;
     // Calculates inductance. L = tR / 5
-    summedInductance += deltaTime / 1000000.0 * circuitResistance / 5.0;
-      
-    digitalWrite(INDICATOR_LED_PIN, LOW);
+    summedInductance += deltaTime / 1000000.0 * circuitResistance / 5;
   }
 
   setInterruptState(true);
 
   LCD.clear();
   LCD.print("ESR: ");
-  LCD.print(summedESR / (double) numberOfSamples);
+  LCD.print(summedESR / numberOfSamples);
   LCD.setCursor(0, 1);
   LCD.print("L: ");
-  LCD.print(summedInductance / (double) numberOfSamples);
+  LCD.print(summedInductance / numberOfSamples);
 
   while (!isButtonPressed()) {}
   LCD.clear();

@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "CoL-Dar"
 Date "2021-02-21"
-Rev "1.1"
+Rev "1.2"
 Comp "ona li toki e jan Epiphany tawa mi"
 Comment1 "N1: L1 is the inductor to be tested."
 Comment2 "N2: R7 is a shunt that the user can change out."
@@ -23,39 +23,6 @@ F 2 "Module:Arduino_UNO_R3" H 6200 4200 50  0001 C CIN
 F 3 "https://www.arduino.cc/en/Main/arduinoBoardUno" H 6200 4200 50  0001 C CNN
 	1    6200 4200
 	1    0    0    -1  
-$EndComp
-$Comp
-L Device:LED D1
-U 1 1 6032DC92
-P 5550 4400
-F 0 "D1" H 5543 4525 50  0000 C CNN
-F 1 "LED" H 5543 4525 50  0001 C CNN
-F 2 "" H 5550 4400 50  0001 C CNN
-F 3 "~" H 5550 4400 50  0001 C CNN
-	1    5550 4400
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR0101
-U 1 1 60333574
-P 5100 4400
-F 0 "#PWR0101" H 5100 4150 50  0001 C CNN
-F 1 "GND" H 5105 4227 50  0000 C CNN
-F 2 "" H 5100 4400 50  0001 C CNN
-F 3 "" H 5100 4400 50  0001 C CNN
-	1    5100 4400
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R_US R4
-U 1 1 60330CD7
-P 5250 4400
-F 0 "R4" V 5045 4400 50  0000 C CNN
-F 1 "220" V 5136 4400 50  0000 C CNN
-F 2 "" V 5290 4390 50  0001 C CNN
-F 3 "~" H 5250 4400 50  0001 C CNN
-	1    5250 4400
-	0    1    1    0   
 $EndComp
 $Comp
 L power:GND #PWR0102
@@ -133,42 +100,6 @@ Wire Wire Line
 	4800 2950 4800 3200
 Wire Wire Line
 	4800 3200 4700 3200
-Wire Wire Line
-	4550 4550 4950 4550
-Wire Wire Line
-	4950 4550 4950 4150
-Wire Wire Line
-	5650 4300 5700 4300
-Wire Wire Line
-	4550 4650 4900 4650
-Wire Wire Line
-	4900 4650 4900 4100
-Wire Wire Line
-	4900 4100 5600 4100
-Wire Wire Line
-	4550 4750 4850 4750
-Wire Wire Line
-	4850 4750 4850 4050
-Wire Wire Line
-	4850 4050 5650 4050
-Wire Wire Line
-	5650 4050 5650 4100
-Wire Wire Line
-	5650 4100 5700 4100
-Wire Wire Line
-	5650 4300 5650 4150
-Wire Wire Line
-	5650 4150 4950 4150
-Wire Wire Line
-	5600 4100 5600 4200
-Wire Wire Line
-	5600 4200 5700 4200
-Wire Wire Line
-	4550 4850 4800 4850
-Wire Wire Line
-	4800 4850 4800 4000
-Wire Wire Line
-	4800 4000 5700 4000
 $Comp
 L power:GND #PWR0104
 U 1 1 6036687F
@@ -203,35 +134,17 @@ Wire Wire Line
 	3550 4750 3550 4650
 Wire Wire Line
 	3550 4650 3750 4650
-Wire Wire Line
-	4550 4050 4750 4050
-Wire Wire Line
-	4750 4050 4750 4900
-Wire Wire Line
-	4750 4900 5650 4900
-Wire Wire Line
-	5650 4900 5650 4600
-Wire Wire Line
-	5650 4600 5700 4600
 $Comp
 L power:GND #PWR0105
 U 1 1 6036D97E
-P 4650 3950
-F 0 "#PWR0105" H 4650 3700 50  0001 C CNN
-F 1 "GND" V 4655 3822 50  0000 R CNN
-F 2 "" H 4650 3950 50  0001 C CNN
-F 3 "" H 4650 3950 50  0001 C CNN
-	1    4650 3950
+P 4550 3950
+F 0 "#PWR0105" H 4550 3700 50  0001 C CNN
+F 1 "GND" V 4555 3822 50  0000 R CNN
+F 2 "" H 4550 3950 50  0001 C CNN
+F 3 "" H 4550 3950 50  0001 C CNN
+	1    4550 3950
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	4550 3950 4650 3950
-Wire Wire Line
-	4550 3850 4600 3850
-Wire Wire Line
-	4600 3850 4600 5550
-Wire Wire Line
-	4600 5550 6750 5550
 Wire Wire Line
 	6750 5550 6750 4600
 Wire Wire Line
@@ -474,4 +387,40 @@ Connection ~ 7850 4450
 Wire Wire Line
 	8450 4850 8450 4400
 Connection ~ 8450 4400
+Wire Wire Line
+	5700 4300 5400 4300
+Wire Wire Line
+	5400 4300 5400 4550
+Wire Wire Line
+	5400 4550 4550 4550
+Wire Wire Line
+	4550 4650 5350 4650
+Wire Wire Line
+	5350 4650 5350 4200
+Wire Wire Line
+	5350 4200 5700 4200
+Wire Wire Line
+	4550 4750 5300 4750
+Wire Wire Line
+	5300 4750 5300 4100
+Wire Wire Line
+	5300 4100 5700 4100
+Wire Wire Line
+	4550 4850 5250 4850
+Wire Wire Line
+	5250 4850 5250 4000
+Wire Wire Line
+	5250 4000 5700 4000
+Wire Wire Line
+	4550 3850 5000 3850
+Wire Wire Line
+	5000 3850 5000 5550
+Wire Wire Line
+	5000 5550 6750 5550
+Wire Wire Line
+	5700 4600 4700 4600
+Wire Wire Line
+	4700 4600 4700 4050
+Wire Wire Line
+	4700 4050 4550 4050
 $EndSCHEMATC
