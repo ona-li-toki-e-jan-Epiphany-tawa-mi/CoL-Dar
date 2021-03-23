@@ -38,13 +38,21 @@ LiquidCrystal LCD(LCD_RS_PIN, LCD_E_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD
 enum StringMappings{e_none = -1, e_exitMenu = 0, e_testInductor = 1, e_testerSettings = 2, e_samplingRate = 3, e_shuntResistance = 4, e_displaySettings = 5, e_brightness = 6, e_contrast = 7, e_samplingRate2 = 8, e_shuntResistance2 = 9};
 const char* stringMap[] = {"Return", "Test Inductor", "Tester Settings", "Sampling Rate", "Shunt Resistance", "Display", "Brightness", "Contrast", "S. Rate", "S. Value"};
 
+/**
+ * Prints the string corresponding to the key onto the LCD.
+ * 
+ * @param stringKey The key corresponding to the string.
+ */
 void printMappedString(StringMappings stringKey) {
   if (stringKey != e_none)
     LCD.print(stringMap[stringKey]);
 }
 
+// Custom characters used for rendering the loading bar.
 byte loadingBar[][8] = {{B00000, B00000, B00000, B00000, B00000, B00000, B00000, B00000}, {B10000, B10000, B10000, B10000, B10000, B10000, B10000, B10000}, {B11000, B11000, B11000, B11000, B11000, B11000, B11000, B11000}, {B11100, B11100, B11100, B11100, B11100, B11100, B11100, B11100}, 
   {B11110, B11110, B11110, B11110, B11110, B11110, B11110, B11110}, {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111}};
+
+
 
 volatile int encoderSteps = 0;
 
@@ -95,8 +103,20 @@ bool isButtonPressed() {
   return wasButtonPressed;
 }
 
+/**
+ * Represents menus and menu items.
+ * Used for user interface.
+ */
 class Menu {
   public:
+    /**
+     * Creates a new menu. Acts as a folder.
+     * Sets the upper menu of all objects in lowerMenus to this.
+     * 
+     * @param displayName The key to the name that is displayed when the menu is shown within another.
+     * @param lowerMenus A list of any menus/menu items within this. 
+     * @param lowerMenusLength The length of lowerMenus.
+     */
     Menu(StringMappings displayName, Menu** lowerMenus, byte lowerMenusLength) {
       this->displayName = displayName;
       this->lowerMenus = lowerMenus;
@@ -107,6 +127,12 @@ class Menu {
         lowerMenus[i]->upperMenu = this;
     }
 
+    /**
+     * Creates a new menu action. Calls the given function when clicked on.
+     * 
+     * @param displayName The key to the name that is displayed when the action is shown inside a menu.
+     * @param action The function to call when the action is clicked.
+     */
     Menu(StringMappings displayName, void (*action)()) {
       this->displayName = displayName;
       this->action = action;
@@ -122,7 +148,7 @@ class Menu {
 };
 
 /**
- * Displays an adjustable slider.
+ * Displays an adjustable slider to the LCD.
  * 
  * @param changableVariable The address of the value to be changed by the slider.
  * @param minimum The minimum value that the slider can set.
@@ -138,26 +164,25 @@ void displaySlider(N currentValue, N minimum, N maximum, StringMappings sliderNa
 
   LCD.setCursor(0, 1);
 
-  double sliderBarPercentage = (double) (currentValue - minimum) / (double) (maximum - minimum);
+  double sliderBarPercentage = (currentValue - minimum) / (double) (maximum - minimum);
   byte sliderBarLength = (byte) (sliderBarPercentage * 16);
 
   for (byte i = 0; i < sliderBarLength; i++)
     LCD.write(5);
 
   byte sliderBarExtra = (byte) (sliderBarPercentage * 16 * 5) - sliderBarLength * 5;
-
   LCD.write(sliderBarExtra);
 }
 
 /**
  * Creates and runs an adjustable slider.
- * The function will exit when the user chooses.
+ * Thread-blocking, will exit when the user chooses.
  * 
  * @param changableVariable The address of the value to be changed by the slider.
  * @param minimum The minimum value that the slider can set.
  * @param maximum The maximum value that the slider can set.
  * @param sliderName The key to the string that should be displayed with the slider.
- * @param sensitivity How fast the value changes with the users input.
+ * @param sensitivity A multiplier that controls how fast the value changes with the users input.
  */
 template <typename N>
 void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMappings sliderName, N sensitivity) {

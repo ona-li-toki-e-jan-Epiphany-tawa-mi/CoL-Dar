@@ -315,10 +315,10 @@ Wire Wire Line
 Wire Notes Line width 20 style dash_dot
 	7750 4600 8550 4600
 $Comp
-L Device:R_US R7
+L Device:R_US R6
 U 1 1 60364A06
 P 8750 4100
-F 0 "R7" H 8818 4146 50  0000 L CNN
+F 0 "R6" H 8818 4146 50  0000 L CNN
 F 1 "R - Variable" H 8818 4055 50  0000 L CNN
 F 2 "" V 8790 4090 50  0001 C CNN
 F 3 "~" H 8750 4100 50  0001 C CNN
