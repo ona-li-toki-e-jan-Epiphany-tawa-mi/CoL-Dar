@@ -1,11 +1,13 @@
 #include <LiquidCrystal.h>
 
 // TODO Ensure type conversions are accurate.
-// TODO Add docstrings to functions and classes.
 // TODO Language options?))
 // TODO Have adjustable states be saved after setting them. 
-// TODO Add rolling average for inductance calculations.
 // TODO Add two sensitivity options for sliders.
+
+// TODO Add rolling average for inductance calculations.
+// TODO Put double conversions at the absolute end (when printing out values) to increase accuracy.
+// TODO Adjust transient time(time for full charge) for better accuracy.
 
 // Config.
 long numberOfSamples = 10000;
@@ -13,7 +15,7 @@ double shuntResistance = 51.0;
 int LCDBrightness = 255/2;
 int LCDContrast = 0;
 
-// Pins.
+/// Pins.
 #define INDUCTOR_CHARGE_PIN 1
 #define BUTTON_PIN 3
 #define LCD_E_PIN 10
@@ -35,6 +37,7 @@ int LCDContrast = 0;
 
 LiquidCrystal LCD(LCD_RS_PIN, LCD_E_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
 
+// Stores string singletons to optimize memory use.
 enum StringMappings{e_none = -1, e_exitMenu = 0, e_testInductor = 1, e_testerSettings = 2, e_samplingRate = 3, e_shuntResistance = 4, e_displaySettings = 5, e_brightness = 6, e_contrast = 7, e_samplingRate2 = 8, e_shuntResistance2 = 9};
 const char* stringMap[] = {"Return", "Test Inductor", "Tester Settings", "Sampling Rate", "Shunt Resistance", "Display", "Brightness", "Contrast", "S. Rate", "S. Value"};
 
@@ -49,8 +52,14 @@ void printMappedString(StringMappings stringKey) {
 }
 
 // Custom characters used for rendering the loading bar.
-byte loadingBar[][8] = {{B00000, B00000, B00000, B00000, B00000, B00000, B00000, B00000}, {B10000, B10000, B10000, B10000, B10000, B10000, B10000, B10000}, {B11000, B11000, B11000, B11000, B11000, B11000, B11000, B11000}, {B11100, B11100, B11100, B11100, B11100, B11100, B11100, B11100}, 
-  {B11110, B11110, B11110, B11110, B11110, B11110, B11110, B11110}, {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111}};
+byte loadingBar[][8] = {
+  {B00000, B00000, B00000, B00000, B00000, B00000, B00000, B00000}, 
+  {B10000, B10000, B10000, B10000, B10000, B10000, B10000, B10000}, 
+  {B11000, B11000, B11000, B11000, B11000, B11000, B11000, B11000}, 
+  {B11100, B11100, B11100, B11100, B11100, B11100, B11100, B11100}, 
+  {B11110, B11110, B11110, B11110, B11110, B11110, B11110, B11110}, 
+  {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111}
+};
 
 
 
@@ -64,6 +73,7 @@ void encoderInterrupt() {
   static unsigned long lastInterruptTime = 0;
   unsigned long interruptTime = millis();
 
+  // Supresses false positives.
   if (interruptTime - lastInterruptTime > 5) {
     if (!digitalRead(ENCODER_DATA_PIN)) {
       encoderSteps++;
@@ -85,6 +95,7 @@ void buttonInterrupt() {
   static unsigned long lastInterruptTime = 0;
   unsigned long interruptTime = millis();
 
+  // Supresses false positives.
   if (interruptTime - lastInterruptTime > 5) {
     buttonPressed = true;
     lastInterruptTime = interruptTime;
@@ -207,16 +218,27 @@ void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMapping
   }
 }
 
+/**
+ * Manages menu trees, using user input to navigate throughout them.
+ */
 class MenuController {
   public:
+    /**
+     * Creates a new Menu Controller, using the given menu as the main menu.
+     * 
+     * @param mainMenu The main menu. All others should be sub-menus to this one.
+     */
     MenuController(Menu* mainMenu) {
       this->mainMenu = mainMenu;
       currentMenu = mainMenu;
     }
 
+    /**
+     * Displays a menu to the LCD.
+     */
     void displayMenu() {
       LCD.clear();
-      
+
       if (currentMenu->lowerMenusLength) {
         printMappedString(currentMenu->lowerMenus[cursorPosition]->displayName);
 
@@ -230,7 +252,10 @@ class MenuController {
       } else
         LCD.print("Nothing here...");
     }
-  
+
+    /**
+     * Carries out button presses, opening folders and executing action menus.
+     */
     void onButtonPress() {
       if (currentMenu->lowerMenusLength) {
         Menu* selectedMenu = currentMenu->lowerMenus[cursorPosition];
@@ -251,13 +276,18 @@ class MenuController {
         displayMenu();
       
       } else if (currentMenu != mainMenu){
-        // Returns to upper menu if nothing is inside the current one or the selected button exits the current menu.
+        // Returns to upper menu if nothing is inside the current one.
         currentMenu = currentMenu->upperMenu;
         displayMenu();
         cursorPosition = 0;
       }
     }
 
+    /**
+     * Scrolls through the current list of menus.
+     * 
+     * @param scrollDistance The distance and direction that was scrolled.
+     */
     void onScroll(int scrollDistance) {
       if (currentMenu->lowerMenusLength) {
         byte oldPosition = cursorPosition;
@@ -271,6 +301,7 @@ class MenuController {
         } else
           cursorPosition += scrollDistance;
 
+        // Updates the rendered menu if anything has changed.
         if (cursorPosition != oldPosition)
           displayMenu();
       }
@@ -288,11 +319,16 @@ void testInductor();
 void setInterruptState(bool state);
 
 // The menu tree.
+// One menu is used as the main one, and all other menus descend from it.
 MenuController* menu = new MenuController(new Menu(e_none, new Menu*[3] {
   new Menu(e_testInductor, testInductor), 
   new Menu(e_testerSettings, new Menu*[3] {
-    new Menu(e_samplingRate, []() {adjustiableSlider(&numberOfSamples, 1000L, 100000, e_samplingRate2, 1000L);}),
-    new Menu(e_shuntResistance, []() {adjustiableSlider(&shuntResistance, 0.0, 1000.0, e_shuntResistance2, 0.05);}),
+    new Menu(e_samplingRate, []() {
+      adjustiableSlider(&numberOfSamples, 1000L, 100000, e_samplingRate2, 1000L);
+    }),
+    new Menu(e_shuntResistance, []() {
+      adjustiableSlider(&shuntResistance, 0.0, 1000.0, e_shuntResistance2, 0.05);
+    }),
     new Menu(e_exitMenu, NULL, 0)
   }, 3), 
   new Menu(e_displaySettings, new Menu*[3] {
@@ -314,7 +350,8 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(INDUCTOR_CHARGE_PIN, OUTPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-  
+
+  // Generates the characters needed for the loading bar.
   for (byte i = 0; i < 6; i++)
     LCD.createChar(i, loadingBar[i]);
   LCD.begin(16, 2);
@@ -350,6 +387,7 @@ void setInterruptState(bool state) {
 bool showCursor = false;
 
 void loop() {  
+  // Scrolling with 5 step deadzone
   if (encoderSteps > 5) {
     encoderSteps = 0;
     menu->onScroll(1);
@@ -364,6 +402,7 @@ void loop() {
     menu->onButtonPress();
   }
 
+  // Flashing cursor.
   unsigned long deltaCursorTime = millis() - cursorTiming;
   if (abs(deltaCursorTime) > 750) {
     showCursor = !showCursor;
