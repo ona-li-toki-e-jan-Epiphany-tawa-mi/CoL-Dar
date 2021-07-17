@@ -3,11 +3,14 @@
 // TODO Ensure type conversions are accurate.
 // TODO Language options?))
 // TODO Have adjustable states be saved after setting them. 
-// TODO Add two sensitivity options for sliders.
+// *TODO Add two sensitivity options for sliders.
+// Add controls for button timings and encoder sensitivity.
+// TODO Optimize string singletons (maybe with pointers?)
 
 // TODO Add rolling average for inductance calculations.
 // TODO Put double conversions at the absolute end (when printing out values) to increase accuracy.
 // TODO Adjust transient time(time for full charge) for better accuracy.
+// TODO Make sure inductor is discharging correctly at the right times.
 
 // Config.
 long numberOfSamples = 10000;
@@ -16,7 +19,7 @@ int LCDBrightness = 255/2;
 int LCDContrast = 0;
 
 /// Pins.
-#define INDUCTOR_CHARGE_PIN 1
+#define INDUCTOR_CHARGE_PIN A5
 #define BUTTON_PIN 3
 #define LCD_E_PIN 10
 #define LCD_D4_PIN 7
@@ -85,7 +88,9 @@ void encoderInterrupt() {
   }
 }
 
-volatile bool buttonPressed = false;
+volatile bool singleButtonPress = false;
+volatile bool doubleButtonPress = false;
+volatile unsigned long lastButtonPressTime = 0;
 
 /**
  * Tells if the button is pressed.
@@ -96,8 +101,25 @@ void buttonInterrupt() {
   unsigned long interruptTime = millis();
 
   // Supresses false positives.
-  if (interruptTime - lastInterruptTime > 5) {
-    buttonPressed = true;
+  if (interruptTime - lastInterruptTime > 50) {
+    unsigned long deltaButtonPressTime = interruptTime - lastButtonPressTime;
+    
+    // Resets button press states if it's been too long since the last button press.
+    if (deltaButtonPressTime > 500) {
+      singleButtonPress = false;
+      doubleButtonPress = false;
+    }
+
+    if (!doubleButtonPress)
+      // Double click detection.
+      if (singleButtonPress && deltaButtonPressTime < 200) {
+        singleButtonPress = false;
+        doubleButtonPress = true;
+      
+      } else 
+        singleButtonPress = true;
+    
+    lastButtonPressTime = interruptTime;
     lastInterruptTime = interruptTime;
   }
 }
@@ -105,13 +127,60 @@ void buttonInterrupt() {
 /**
  * Tests if the button is pressed.
  * Successive calls without button presses in between will return false, regardless of the initial state.
+ * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
  * 
  * @return The state of the button.
  */
 bool isButtonPressed() {
-  bool wasButtonPressed = buttonPressed;
-  buttonPressed = false;
+  if (millis() - lastButtonPressTime > 500)
+    return false;
+    
+  
+  bool wasButtonPressed = singleButtonPress || doubleButtonPress;
+  
+  singleButtonPress = false;
+  doubleButtonPress = false;
+  
   return wasButtonPressed;
+}
+
+/**
+ * Tests if the button was clicked once.
+ * Successive calls without button presses in between will return false, regardless of the initial state.
+ * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
+ * 
+ * @return The state of the button.
+ */
+bool isButtonSingleClicked() {
+  unsigned long currentTime = millis();
+  if (currentTime - lastButtonPressTime > 500 || currentTime - lastButtonPressTime < 300)
+    return false;
+    
+  
+  bool wasSingleClick = singleButtonPress && !doubleButtonPress;
+  
+  singleButtonPress = false;
+  
+  return wasSingleClick;
+}
+
+/**
+ * Tests if the button was clicked twice.
+ * Successive calls without button presses in between will return false, regardless of the initial state.
+ * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
+ * 
+ * @return The state of the button.
+ */
+bool isButtonDoubleClicked() {
+  if (millis() - lastButtonPressTime > 500)
+    return false;
+
+    
+  bool wasDoubleClick = !singleButtonPress && doubleButtonPress;
+  
+  doubleButtonPress = false;
+  
+  return wasDoubleClick;
 }
 
 /**
@@ -193,17 +262,19 @@ void displaySlider(N currentValue, N minimum, N maximum, StringMappings sliderNa
  * @param minimum The minimum value that the slider can set.
  * @param maximum The maximum value that the slider can set.
  * @param sliderName The key to the string that should be displayed with the slider.
- * @param sensitivity A multiplier that controls how fast the value changes with the users input.
+ * 
+ * TODO @param sensitivity A multiplier that controls how fast the value changes with the users input.
  */
 template <typename N>
-void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMappings sliderName, N sensitivity) {
+void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMappings sliderName, N roughSensitivity, N fineSensitivity) {
   displaySlider(*changableVariable, minimum, maximum, sliderName);
   
   encoderSteps = 0;
+  N* selectedSensitivity = &roughSensitivity;
   
   while (true) {
     if (encoderSteps) {
-      N newValue = min(max(*changableVariable + encoderSteps * sensitivity, minimum), maximum);
+      N newValue = min(max(*changableVariable + encoderSteps * *selectedSensitivity, minimum), maximum);
 
       if (*changableVariable != newValue) {
         *changableVariable = newValue;
@@ -213,7 +284,15 @@ void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMapping
       }
     }
 
-    if (isButtonPressed())
+    // Swaps sensitivities on single clicks.
+    if (isButtonSingleClicked())
+      if (selectedSensitivity == &roughSensitivity) {
+        selectedSensitivity = &fineSensitivity;
+      
+      } else
+        selectedSensitivity = &roughSensitivity;
+
+    if (isButtonDoubleClicked())
       break;
   }
 }
@@ -324,20 +403,20 @@ MenuController* menu = new MenuController(new Menu(e_none, new Menu*[3] {
   new Menu(e_testInductor, testInductor), 
   new Menu(e_testerSettings, new Menu*[3] {
     new Menu(e_samplingRate, []() {
-      adjustiableSlider(&numberOfSamples, 1000L, 100000, e_samplingRate2, 1000L);
+      adjustiableSlider(&numberOfSamples, 1000L, 100000, e_samplingRate2, 1000L, 1L);
     }),
     new Menu(e_shuntResistance, []() {
-      adjustiableSlider(&shuntResistance, 0.0, 1000.0, e_shuntResistance2, 0.05);
+      adjustiableSlider(&shuntResistance, 0.0, 1000.0, e_shuntResistance2, 0.05, 1.0);
     }),
     new Menu(e_exitMenu, NULL, 0)
   }, 3), 
   new Menu(e_displaySettings, new Menu*[3] {
     new Menu(e_brightness, []() {
-      adjustiableSlider(&LCDBrightness, 0, 255, e_brightness, 8);
+      adjustiableSlider(&LCDBrightness, 0, 255, e_brightness, 8, 1);
       analogWrite(LCD_BACKLIGHT_PIN, LCDBrightness);
     }),
     new Menu(e_contrast, []() {
-      adjustiableSlider(&LCDContrast, 0, 50, e_contrast, 3);
+      adjustiableSlider(&LCDContrast, 0, 50, e_contrast, 3, 1);
       analogWrite(LCD_CONTRAST_PIN, LCDContrast);
     }),
     new Menu(e_exitMenu, NULL, 0)
@@ -388,11 +467,11 @@ bool showCursor = false;
 
 void loop() {  
   // Scrolling with 5 step deadzone
-  if (encoderSteps > 5) {
+  if (encoderSteps > 4) {
     encoderSteps = 0;
     menu->onScroll(1);
     
-  } else if (encoderSteps < -5) {
+  } else if (encoderSteps < -4) {
     encoderSteps = 0;
     menu->onScroll(-1);
   }

@@ -241,14 +241,6 @@ F 3 "" H 7750 3850 50  0001 L CNN
 	1    7750 3850
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5700 3700 5550 3700
-Wire Wire Line
-	5550 3700 5550 2800
-Wire Wire Line
-	5550 2800 7550 2800
-Wire Wire Line
-	7550 2800 7550 3850
 $Comp
 L Device:R_US R4
 U 1 1 6033E601
@@ -282,7 +274,6 @@ F 3 "~" H 8000 4250 50  0001 C CNN
 	1    8000 4250
 	0    -1   -1   0   
 $EndComp
-Connection ~ 7550 3850
 Wire Wire Line
 	7850 4050 7850 4250
 $Comp
@@ -423,4 +414,11 @@ Wire Wire Line
 	4700 4600 4700 4050
 Wire Wire Line
 	4700 4050 4550 4050
+Wire Wire Line
+	7550 3850 6900 3850
+Wire Wire Line
+	6900 3850 6900 4700
+Wire Wire Line
+	6900 4700 6700 4700
+Connection ~ 7550 3850
 $EndSCHEMATC
