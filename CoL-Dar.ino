@@ -1,10 +1,10 @@
+#include <EEPROM.h>
 #include <LiquidCrystal.h>
 
 // TODO Ensure type conversions are accurate.
 // TODO Language options?))
-// TODO Have adjustable states be saved after setting them. 
-// *TODO Add two sensitivity options for sliders.
-// Add controls for button timings and encoder sensitivity.
+// TODO Add controls for button timings and encoder sensitivity.
+// TODO Have values controlled by sliders be actively changed with them.
 // TODO Optimize string singletons (maybe with pointers?)
 
 // TODO Add rolling average for inductance calculations.
@@ -12,11 +12,18 @@
 // TODO Adjust transient time(time for full charge) for better accuracy.
 // TODO Make sure inductor is discharging correctly at the right times.
 
-// Config.
-long numberOfSamples = 10000;
-double shuntResistance = 51.0;
-int LCDBrightness = 255/2;
-int LCDContrast = 0;
+struct SytemConfiguraton {
+  boolean notFirstEEPROMRead;
+  long numberOfSamples;
+  double shuntResistance;
+  byte LCDBrightness;
+  byte LCDContrast;
+};
+
+SytemConfiguraton config = SytemConfiguraton();
+
+// Defines where permanent variables are stored in EEPROM.
+#define configEEPROMAddress 0
 
 /// Pins.
 #define INDUCTOR_CHARGE_PIN A5
@@ -41,8 +48,8 @@ int LCDContrast = 0;
 LiquidCrystal LCD(LCD_RS_PIN, LCD_E_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
 
 // Stores string singletons to optimize memory use.
-enum StringMappings{e_none = -1, e_exitMenu = 0, e_testInductor = 1, e_testerSettings = 2, e_samplingRate = 3, e_shuntResistance = 4, e_displaySettings = 5, e_brightness = 6, e_contrast = 7, e_samplingRate2 = 8, e_shuntResistance2 = 9};
 const char* stringMap[] = {"Return", "Test Inductor", "Tester Settings", "Sampling Rate", "Shunt Resistance", "Display", "Brightness", "Contrast", "S. Rate", "S. Value"};
+enum StringMappings{e_none = -1, e_exitMenu = 0, e_testInductor = 1, e_testerSettings = 2, e_samplingRate = 3, e_shuntResistance = 4, e_displaySettings = 5, e_brightness = 6, e_contrast = 7, e_samplingRate2 = 8, e_shuntResistance2 = 9};
 
 /**
  * Prints the string corresponding to the key onto the LCD.
@@ -127,7 +134,7 @@ void buttonInterrupt() {
 /**
  * Tests if the button is pressed.
  * Successive calls without button presses in between will return false, regardless of the initial state.
- * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
+ * Will return false if the button has not been pressed in a while, regardless of whether or not the function was called
  * 
  * @return The state of the button.
  */
@@ -147,7 +154,7 @@ bool isButtonPressed() {
 /**
  * Tests if the button was clicked once.
  * Successive calls without button presses in between will return false, regardless of the initial state.
- * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
+ * Will return false if the button has not been pressed in a while, regardless of whether or not the function was called
  * 
  * @return The state of the button.
  */
@@ -167,7 +174,7 @@ bool isButtonSingleClicked() {
 /**
  * Tests if the button was clicked twice.
  * Successive calls without button presses in between will return false, regardless of the initial state.
- * Will return false if the button has not been pressed for a little bit, regardless of whether or not the function was called
+ * Will return false if the button has not been pressed for in a while, regardless of whether or not the function was called
  * 
  * @return The state of the button.
  */
@@ -257,13 +264,14 @@ void displaySlider(N currentValue, N minimum, N maximum, StringMappings sliderNa
 /**
  * Creates and runs an adjustable slider.
  * Thread-blocking, will exit when the user chooses.
+ * Use a single click to change sensitivty, use a double click to exit the menu.
  * 
  * @param changableVariable The address of the value to be changed by the slider.
  * @param minimum The minimum value that the slider can set.
  * @param maximum The maximum value that the slider can set.
  * @param sliderName The key to the string that should be displayed with the slider.
- * 
- * TODO @param sensitivity A multiplier that controls how fast the value changes with the users input.
+ * @param roughSensitivity A multiplier that controls how fast the value changes with the users input. The inital and larger of the sensitivities.
+ * @param fineSensitivity A multiplier that controls how fast the value changes with the users input. The secondary and smaller of the sensitivities.
  */
 template <typename N>
 void adjustiableSlider(N* changableVariable, N minimum, N maximum, StringMappings sliderName, N roughSensitivity, N fineSensitivity) {
@@ -400,24 +408,35 @@ void setInterruptState(bool state);
 // The menu tree.
 // One menu is used as the main one, and all other menus descend from it.
 MenuController* menu = new MenuController(new Menu(e_none, new Menu*[3] {
+  // Runs tests on the inductor.
   new Menu(e_testInductor, testInductor), 
+  // Settings that control the behavior of the inductor tests.
   new Menu(e_testerSettings, new Menu*[3] {
+    // How many samples that will be taken when running the inductor tests.
     new Menu(e_samplingRate, []() {
-      adjustiableSlider(&numberOfSamples, 1000L, 100000, e_samplingRate2, 1000L, 1L);
+      adjustiableSlider(&config.numberOfSamples, 5L, 100000, e_samplingRate2, 1000L, 5L);
+      EEPROM.put(configEEPROMAddress, config);
     }),
+    // The resistance of the shunt used to measure current through the charging circuit.
     new Menu(e_shuntResistance, []() {
-      adjustiableSlider(&shuntResistance, 0.0, 1000.0, e_shuntResistance2, 0.05, 1.0);
+      adjustiableSlider(&config.shuntResistance, 0.05, 1000.0, e_shuntResistance2, 1.0, 0.05);
+      EEPROM.put(configEEPROMAddress, config);
     }),
     new Menu(e_exitMenu, NULL, 0)
   }, 3), 
+  // Settings that control the behavior of the LCD.
   new Menu(e_displaySettings, new Menu*[3] {
+    // The brightness of the LCD.
     new Menu(e_brightness, []() {
-      adjustiableSlider(&LCDBrightness, 0, 255, e_brightness, 8, 1);
-      analogWrite(LCD_BACKLIGHT_PIN, LCDBrightness);
+      adjustiableSlider(&config.LCDBrightness, (byte) 0, (byte) 255, e_brightness, (byte) 8, (byte) 1);
+      EEPROM.put(configEEPROMAddress, config);
+      analogWrite(LCD_BACKLIGHT_PIN, (int) config.LCDBrightness);
     }),
+    // How much contrast the characters of the LCD have.
     new Menu(e_contrast, []() {
-      adjustiableSlider(&LCDContrast, 0, 50, e_contrast, 3, 1);
-      analogWrite(LCD_CONTRAST_PIN, LCDContrast);
+      adjustiableSlider(&config.LCDContrast, (byte) 0, (byte) 50, e_contrast, (byte) 3, (byte) 1);
+      EEPROM.put(configEEPROMAddress, config);
+      analogWrite(LCD_CONTRAST_PIN, (int) config.LCDContrast);
     }),
     new Menu(e_exitMenu, NULL, 0)
   }, 3)
@@ -429,6 +448,18 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(INDUCTOR_CHARGE_PIN, OUTPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
+
+  // Reads system configuration from memory, initializing the values if nothing has been written before.
+  EEPROM.get(configEEPROMAddress, config);
+  if (!config.notFirstEEPROMRead) {
+    config.notFirstEEPROMRead = true;
+    config.numberOfSamples = 100L;
+    config.shuntResistance = 1.0;
+    config.LCDBrightness = 180;
+    config.LCDContrast = 0;
+
+    EEPROM.put(configEEPROMAddress, config);
+  }
 
   // Generates the characters needed for the loading bar.
   for (byte i = 0; i < 6; i++)
@@ -448,8 +479,8 @@ void setup() {
  */
 void setInterruptState(bool state) {
   if (state) {
-    analogWrite(LCD_BACKLIGHT_PIN, LCDBrightness);
-    analogWrite(LCD_CONTRAST_PIN, LCDContrast);
+    analogWrite(LCD_BACKLIGHT_PIN, (int) config.LCDBrightness);
+    analogWrite(LCD_CONTRAST_PIN, (int) config.LCDContrast);
     attachInterrupt(digitalPinToInterrupt(ENCODER_CLOCK_PIN), encoderInterrupt, LOW);
     attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), buttonInterrupt, LOW);
     
@@ -501,7 +532,7 @@ void testInductor() {
   double summedESR = 0;
   double summedInductance = 0;
 
-  for (long int i = 0; i < numberOfSamples; i++) {
+  for (long int i = 0; i < config.numberOfSamples; i++) {
     // Measures how long the inductor takes to charge.
     int lastVoltage = -1;
     int currentVoltage;
@@ -528,9 +559,9 @@ void testInductor() {
     // Overflow protection.
     unsigned long deltaTime = endTime > startTime ? endTime - startTime : (unsigned long) -1 - startTime + endTime;
     // Caculates the circuit resistance from shunt. R = Vcc / (Vs / Rs)
-    double circuitResistance = 5 / (shuntVoltage * (5 / 1024.0) / shuntResistance);
+    double circuitResistance = 5 / (shuntVoltage * (5 / 1024.0) / config.shuntResistance);
     
-    summedESR += circuitResistance - shuntResistance;
+    summedESR += circuitResistance - config.shuntResistance;
     // Calculates inductance. L = tR / 5
     summedInductance += deltaTime / 1000000.0 * circuitResistance / 5;
   }
@@ -539,10 +570,10 @@ void testInductor() {
 
   LCD.clear();
   LCD.print("ESR: ");
-  LCD.print(summedESR / numberOfSamples);
+  LCD.print(summedESR / config.numberOfSamples);
   LCD.setCursor(0, 1);
   LCD.print("L: ");
-  LCD.print(summedInductance / numberOfSamples);
+  LCD.print(summedInductance / config.numberOfSamples);
 
   while (!isButtonPressed()) {}
   LCD.clear();
